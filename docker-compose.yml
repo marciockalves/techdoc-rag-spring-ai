@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  pgvector-db:
+    image: docker.io/pgvector/pgvector:pg16 # <--- URL completa previne a checagem de short-name no Podman
+    container_name: hardware_assistant_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-tech_doc_rag}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data:Z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgvector_data:

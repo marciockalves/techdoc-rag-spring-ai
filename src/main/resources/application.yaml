@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: tech-doc-rag-spring-ai
+
+  # Conexão com o Banco PostgreSQL
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tech_doc_rag}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  # Configuração do Vector Store (PgVector)
+  ai:
+    chunk-size: 800
+    chunk-overlap: 400
+    search:
+      top-k: 4
+      threshold: 0.30
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE
+        dimensions: 768 # Dimensão padrão para embeddings (pode variar de acordo com o modelo)
+        initialize-schema: true # Cria automaticamente as tabelas de vetores se não existirem
+
+    # Configuração do Provedor de IA - Google Gemini Cloud
+    vertexai:
+      gemini:
+        api-key: ${GEMINI_API_KEY:}
+        model: ${GEMINI_MODEL:gemini-1.5-flash}
+        project-id: ${GEMINI_PROJECT_ID:hardware-assistant-prod}
+        location: ${GEMINI_LOCATION:us-central1}
+
+    # Configuração do Provedor de IA - Ollama (Local)
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL:qwen2.5:3b}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${OLLAMA_EMBED_MODEL:nomic-embed-text}
+
+server:
+  port: 8000
+
+# Alternador de Provedor de IA Ativo na Aplicação
+app:
+  ai:
+    provider: ${AI_PROVIDER:gemini} # Valores suportados: 'gemini' ou 'ollama'
+    documents-path: ${DOCUMENTS_PATH:src/main/resources/manuals}
+    search:
+      top-k: ${APP_AI_SEARCH_TOP_K:4}
+      threshold: ${APP_AI_SEARCH_THRESHOLD:0.70}
